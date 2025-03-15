@@ -1,5 +1,3 @@
-./config.py
-
 
 .vscode/
 .idea/
@@ -15,3 +13,4 @@ __pycache__/
 .venv/
 env/
 htmlcov/
+/config.py
