@@ -1,0 +1,17 @@
+./config.py
+
+
+.vscode/
+.idea/
+
+__pycache__/
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+.cache
+.env
+.nox/
+.venv/
+env/
+htmlcov/
