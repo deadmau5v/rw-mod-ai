@@ -5,3 +5,4 @@ pydantic~=2.10.6
 uvicorn~=0.34.0
 langchain-core~=0.3.45
 fastapi~=0.115.11
+webdavclient~=1.0.8

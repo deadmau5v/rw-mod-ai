@@ -2,6 +2,8 @@
 .vscode/
 .idea/
 
+data/markdown/
+
 __pycache__/
 .pytest_cache/
 .tox/
@@ -13,4 +15,11 @@ __pycache__/
 .venv/
 env/
 htmlcov/
-/config.py
+config.py
+
+temp*
+*.log
+images
+jsons
+mod_detail
+mods

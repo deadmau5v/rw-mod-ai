@@ -61,7 +61,7 @@ def translate(text: Text):
         input_variables=["text"],
         partial_variables={"format_instructions": parser.get_format_instructions()}
     )
-    llm = ChatOpenAI(base_url=config.BASE_URL, api_key=SecretStr(config.API_KEY), model="GPT-4o-Mini", temperature=0)
+    llm = ChatOpenAI(base_url=config.BASE_URL, api_key=SecretStr(config.API_KEY), model=config.MODULE, temperature=0)
     chain = prompt | llm | parser
     result = chain.invoke({"text": text.to_params()})
 
@@ -97,7 +97,7 @@ def translate_Markdown(text: Text):
         input_variables=["text"],
         partial_variables={"format_instructions": parser.get_format_instructions()}
     )
-    llm = ChatOpenAI(base_url=config.BASE_URL, api_key=SecretStr(config.API_KEY), model="GPT-4o-Mini", temperature=0)
+    llm = ChatOpenAI(base_url=config.BASE_URL, api_key=SecretStr(config.API_KEY), model=config.MODULE, temperature=0)
     chain = prompt | llm | parser
 
     result = chain.invoke({"text": text.to_params()})
@@ -110,10 +110,12 @@ def translate_Markdown(text: Text):
     return text
 
 
-conn = psycopg2.connect(**config.db_params)
-
+def connect_db():
+    conn = psycopg2.connect(**config.db_params)
+    return conn
 
 def get_mods_to_process() -> list[tuple[int, Text, Text]]:
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("""SELECT id, title, title_cn, content, content_cn FROM mods_info""")
     results = cursor.fetchall()
@@ -137,6 +139,7 @@ def get_mods_to_process() -> list[tuple[int, Text, Text]]:
 
 
 def update_mod(id, title, title_cn, content, content_cn):
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute(
         """UPDATE mods_info SET title = %s, title_cn = %s, content = %s, content_cn = %s WHERE id=%s""",
@@ -148,7 +151,41 @@ def update_mod(id, title, title_cn, content, content_cn):
     print(id, "update success")
 
 
+def translate_from_html(html: str):
+    response_schemas = [
+        ResponseSchema(name="markdown_english", description="格式化后的英语markdown介绍", type="string"),
+        ResponseSchema(name="markdown_chinese", description="格式化后的中文markdown介绍", type="string"),
+        ResponseSchema(name="imgs", description="引用的img地址列表", type="list[str]"),
+    ]
+    
+    parser = StructuredOutputParser.from_response_schemas(response_schemas)
+    template = """
+    将以上模组介绍信息进行markdown格式化:
+      - 不保留格式化后的img内容
+      - 将img地址存到单独字段
+    {html}
+    
+    根据用户提供的html原始信息 翻译出markdown格式的英文和中文介绍
+    {format_instructions}
+    """
+    
+    prompt = PromptTemplate(
+        template=template,
+        input_variables=["html"],
+        partial_variables={"format_instructions": parser.get_format_instructions()}
+    )
+    llm = ChatOpenAI(base_url=config.BASE_URL, api_key=SecretStr(config.API_KEY), model=config.MODULE, temperature=0)
+    chain = prompt | llm | parser
+    result = chain.invoke({"html": html})
+    return {
+        "content": result.get("markdown_english"),
+        "content_cn": result.get("markdown_chinese"),
+        "imgs": result.get("imgs")
+    }
+    
+
 if __name__ == '__main__':
+    # 批处理
     from concurrent.futures import ThreadPoolExecutor
 
     with ThreadPoolExecutor(max_workers=10) as thread_loop:

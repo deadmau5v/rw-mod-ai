@@ -72,7 +72,8 @@
 
 ### 安装与运行
 
-```sh
+#### 搜索服务API
+```shell
 # 安装 Python 依赖
 pip install -r requirements.txt
 
