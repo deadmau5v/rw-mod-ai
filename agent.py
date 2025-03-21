@@ -23,24 +23,25 @@ llm = ChatOpenAI(
 )
 
 
-
 def generate_sql_query(user_query: str) -> dict:
     """
     使用 LLMChain 将自然语言查询转为 SQL 查询
     """
-        
+
     # 输出字段
     response_schemas = [
         ResponseSchema(name="isRunTopic", description="是否跑题，如果跑题，处query_error_message以外字段全部为空",
-                    type="bool"),
-        ResponseSchema(name="isQuestion", description="用户是否提出问题，而不是让推荐模组", type="bool"),
-        ResponseSchema(name="isSQLInjection", description="用户查询是否涉嫌SQL注入", type="bool"),
+                       type="bool"),
+        ResponseSchema(name="isQuestion",
+                       description="用户是否提出问题，而不是让推荐模组", type="bool"),
+        ResponseSchema(name="isSQLInjection",
+                       description="用户查询是否涉嫌SQL注入", type="bool"),
         ResponseSchema(name="sql", description="生成的SQL查询语句", type="str"),
         ResponseSchema(name="description", description="正常回复用户的问题",
-                    type="str"),
+                       type="str"),
         ResponseSchema(name="query_error_message",
-                    description="错误信息 如果RunTopic或isSQLInjection为True时提示用户 isQuestion为True时为空 sql不为空时 此项为假如查询错误时显示的信息",
-                    type="str"),
+                       description="错误信息 如果RunTopic或isSQLInjection为True时提示用户 isQuestion为True时为空 sql不为空时 此项为假如查询错误时显示的信息",
+                       type="str"),
     ]
     # 结构化解析
     parser = StructuredOutputParser.from_response_schemas(response_schemas)
@@ -84,7 +85,8 @@ def execute_sql_query(query: str) -> list[ModsInfo]:
     results = cursor.fetchall()
     cursor.close()
 
-    results = [dict(zip([desc[0] for desc in cursor.description], row)) for row in results]
+    results = [dict(zip([desc[0] for desc in cursor.description], row))
+               for row in results]
     return [ModsInfo.from_dict(row) for row in results]
 
 
@@ -92,8 +94,7 @@ def natural_language_search(user_query: str) -> dict:
     """
     使用 LangChain 实现自然语言搜索
     """
-    
-    
+
     print(f"用户查询: {user_query}")
 
     # 使用 AI 模型生成 SQL 查询 or 回复
@@ -140,7 +141,7 @@ def get_content_tags(content: str) -> list[str]:
     response_schemas = [
         ResponseSchema(name="tags", description="标签", type="list[str]"),
     ]
-    
+
     parser = StructuredOutputParser.from_response_schemas(response_schemas)
     template = """
     分析以下文本:
@@ -150,16 +151,15 @@ def get_content_tags(content: str) -> list[str]:
       - 最高生成4个标签
     {format_instructions}
     """
-    
+
     prompt = PromptTemplate(
         template=template,
         input_variables=["content"],
-        partial_variables={"format_instructions": parser.get_format_instructions()}
+        partial_variables={
+            "format_instructions": parser.get_format_instructions()}
     )
     chain = prompt | llm | parser
-    
+
     result = chain.invoke({"content": content})
-    
+
     return result
-    
-    

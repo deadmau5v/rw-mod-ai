@@ -23,3 +23,7 @@ images
 jsons
 mod_detail
 mods
+data/mods_rwmod/
+data/mods/
+data/ini/
+data/png/
