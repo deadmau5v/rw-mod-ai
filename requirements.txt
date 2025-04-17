@@ -1,8 +1,9 @@
 psycopg2~=2.9.9
-langchain~=0.3.20
-langchain-openai~=0.3.8
 pydantic~=2.10.6
 uvicorn~=0.34.0
-langchain-core~=0.3.45
 fastapi~=0.115.11
 webdavclient~=1.0.8
+
+# latest
+agno
+redis

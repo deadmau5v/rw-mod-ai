@@ -27,3 +27,5 @@ data/mods_rwmod/
 data/mods/
 data/ini/
 data/png/
+test_*
+cache_*
