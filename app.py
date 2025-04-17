@@ -31,9 +31,19 @@ class Response(BaseModel):
 
 @app.get("/api/ai/search", response_model=Response)
 async def search_mods(query: str = Query(..., description="Natural language search query")):
-    # 自然语言搜索
-    
-    return
+    """
+    AI 搜索接口，对接前端搜索功能
+    """
+    from agent import AISearch
+    try:
+        ai_search = AISearch()
+        result = ""
+        for resp in ai_search.run(topic=query):
+            if hasattr(resp, "content"):
+                result += resp.content
+        return Response(data={"result": result}, message="success", error="")
+    except Exception as e:
+        return Response(data={}, message="fail", error=str(e))
 
 
 @app.get("/api/ai/recommend", response_model=Response)
